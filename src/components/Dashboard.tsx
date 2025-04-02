@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Calendar, Users, MessageCircle, Clock, Bell, ChevronRight } from 'lucide-react';
+import { LogOut, Calendar, Users, MessageCircle, Clock, Bell, ChevronRight, X, Check } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface Appointment {
   id: string;
@@ -42,6 +43,21 @@ const Dashboard = () => {
     }
   ]);
 
+  // New state for appointment scheduling modal
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [newAppointment, setNewAppointment] = useState({
+    specialist: '',
+    date: '',
+    time: '',
+    reason: ''
+  });
+
+  const specialists = [
+    'Dr. Sarah Johnson - Clinical Psychologist',
+    'Dr. Michael Osei - Counseling Therapist',
+    'Dr. Amina Mutesi - Mental Health Counselor'
+  ];
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -49,6 +65,31 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Failed to log out', error);
     }
+  };
+
+  const handleScheduleAppointment = () => {
+    if (!newAppointment.specialist || !newAppointment.date || !newAppointment.time || !newAppointment.reason) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    const fullDateTime = `${newAppointment.date} ${newAppointment.time}`;
+    const newAppointmentEntry: Appointment = {
+      id: String(appointments.length + 1),
+      date: fullDateTime,
+      specialist: newAppointment.specialist,
+      status: 'upcoming'
+    };
+
+    setAppointments([...appointments, newAppointmentEntry]);
+    setIsScheduleModalOpen(false);
+    // Reset form
+    setNewAppointment({
+      specialist: '',
+      date: '',
+      time: '',
+      reason: ''
+    });
   };
 
   return (
@@ -73,6 +114,107 @@ const Dashboard = () => {
           </div>
         </div>
       </nav>
+
+      {/* Add new Appointment */}
+      {isScheduleModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Schedule New Appointment</h2>
+              <button 
+                onClick={() => setIsScheduleModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Specialist
+                </label>
+                <select
+                  value={newAppointment.specialist}
+                  onChange={(e) => setNewAppointment(prev => ({
+                    ...prev, 
+                    specialist: e.target.value
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="">Choose a Specialist</option>
+                  {specialists.map((specialist, index) => (
+                    <option key={index} value={specialist}>
+                      {specialist}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={newAppointment.date}
+                  onChange={(e) => setNewAppointment(prev => ({
+                    ...prev, 
+                    date: e.target.value
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Time
+                </label>
+                <input
+                  type="time"
+                  value={newAppointment.time}
+                  onChange={(e) => setNewAppointment(prev => ({
+                    ...prev, 
+                    time: e.target.value
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Reason for Appointment
+                </label>
+                <textarea
+                  value={newAppointment.reason}
+                  onChange={(e) => setNewAppointment(prev => ({
+                    ...prev, 
+                    reason: e.target.value
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  rows={4}
+                  placeholder="Briefly describe the reason for your appointment"
+                ></textarea>
+              </div>
+
+              <div className="flex space-x-4">
+                <button
+                  onClick={handleScheduleAppointment}
+                  className="flex-1 bg-purple-600 text-white py-2 rounded-md hover:bg-purple-700 transition flex items-center justify-center"
+                >
+                  <Check className="h-5 w-5 mr-2" /> Schedule
+                </button>
+                <button
+                  onClick={() => setIsScheduleModalOpen(false)}
+                  className="flex-1 bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 transition flex items-center justify-center"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -140,12 +282,15 @@ const Dashboard = () => {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
               <div className="space-y-4">
-                <button className="w-full flex items-center justify-between px-4 py-3 bg-purple-50 rounded-lg hover:bg-purple-100">
+                <button 
+                  onClick={() => setIsScheduleModalOpen(true)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-purple-50 rounded-lg hover:bg-purple-100"
+                >
                   <span className="flex items-center">
                     <Calendar className="h-5 w-5 text-purple-600 mr-3" />
                     <span>Schedule New Session</span>
                   </span>
-                  <ChevronRight className="h-5 w-5 text-purple-600" />
+                    <ChevronRight className="h-5 w-5 text-purple-600" />
                 </button>
                 <button className="w-full flex items-center justify-between px-4 py-3 bg-purple-50 rounded-lg hover:bg-purple-100">
                   <span className="flex items-center">

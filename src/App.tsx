@@ -5,7 +5,6 @@ import Login from './components/auth/Login';
 import SignUp from './components/auth/SignUp';
 import Dashboard from './components/Dashboard';
 import LandingPage from './components/LandingPage';
-import { Brain } from 'lucide-react';
 
 function App() {
   return (
