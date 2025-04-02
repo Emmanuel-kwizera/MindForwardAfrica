@@ -16,8 +16,8 @@ Before you begin, ensure you have the following installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Emmanuel-kwizera/MindForward_Africa.git
-cd MindForward_Africa
+git clone https://github.com/Emmanuel-kwizera/MindForwardAfrica.git
+cd MindForwardAfrica
 ```
 
 ### 2. Environment Configuration
